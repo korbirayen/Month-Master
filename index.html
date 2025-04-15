@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Month Master - Learn Months in 3 Languages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#faf5ff',
+                            100: '#f3e8ff',
+                            200: '#e9d5ff',
+                            300: '#d8b4fe',
+                            400: '#c084fc',
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            800: '#6b21a8',
+                            900: '#581c87',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .flip-card {
+            perspective: 1000px;
+            height: 160px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            top: 0;
+            left: 0;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        .rtl {
+            direction: rtl;
+        }
+        .type-answer-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9d5ff;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+        }
+        .type-answer-input:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 id="app-title" class="text-3xl font-bold text-primary-600 dark:text-primary-400">Month Master</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <select id="language-selector" class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md py-2 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-800 dark:text-gray-200">
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <button id="toggle-dark-mode" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-yellow-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Introduction -->
+            <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 transition-colors duration-300">
+                <h2 id="intro-title" class="text-2xl font-semibold mb-4 text-primary-600 dark:text-primary-400">Welcome to Month Master!</h2>
+                <p id="intro-text" class="text-gray-700 dark:text-gray-300 mb-4">
+                    Struggling to remember month numbers and names? This interactive quiz will help you master months in three languages: English, French, and Arabic.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <button id="start-number-to-name" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition">
+                        <i class="fas fa-hashtag mr-2"></i>
+                        <span id="number-to-name-btn">Number to Name</span>
+                    </button>
+                    <button id="start-name-to-number" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition">
+                        <i class="fas fa-font mr-2"></i>
+                        <span id="name-to-number-btn">Name to Number</span>
+                    </button>
+                    <button id="start-mixed" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition">
+                        <i class="fas fa-random mr-2"></i>
+                        <span id="mixed-btn">Mixed Quiz</span>
+                    </button>
+                    <button id="start-hard-mode" class="bg-primary-800 hover:bg-primary-900 text-white font-medium py-2 px-4 rounded-md transition">
+                        <i class="fas fa-keyboard mr-2"></i>
+                        <span id="hard-mode-btn">Hard Mode</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Quiz Area (initially hidden) -->
+            <section id="quiz-area" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="quiz-title" class="text-xl font-semibold text-primary-600 dark:text-primary-400">Quiz</h2>
+                    <div class="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+                        <span id="score" class="font-medium">Score: 0</span>
+                        <span id="progress" class="font-medium">Question: 1/12</span>
+                    </div>
+                </div>
+
+                <div id="question-container" class="mb-8">
+                    <!-- Question will be inserted here -->
+                </div>
+
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Options will be inserted here -->
+                </div>
+
+                <div id="type-answer-container" class="hidden mb-6">
+                    <input type="text" id="type-answer-input" class="type-answer-input" placeholder="Type your answer here...">
+                    <button id="submit-answer" class="mt-4 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition">
+                        <span id="submit-text">Submit</span>
+                    </button>
+                </div>
+
+                <div class="flex justify-end">
+                    <button id="next-btn" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition">
+                        <span id="next-text">Next</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <div id="result-container" class="hidden mt-4 p-4 rounded-md">
+                    <!-- Result feedback will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Flash Cards -->
+            <section id="flashcards-section" class="mb-8">
+                <h2 id="flashcards-title" class="text-2xl font-semibold mb-4 text-primary-600 dark:text-primary-400">Month Flashcards</h2>
+                <p id="flashcards-text" class="text-gray-700 dark:text-gray-300 mb-4">Click on a card to flip it and learn the month in all three languages.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Flash cards will be generated here -->
+                </div>
+            </section>
+
+            <!-- Progress Tracking -->
+            <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-300">
+                <h2 id="progress-title" class="text-2xl font-semibold mb-4 text-primary-600 dark:text-primary-400">Your Progress</h2>
+                <div class="mb-4">
+                    <div class="flex justify-between mb-1">
+                        <span id="progress-label" class="text-sm font-medium text-gray-700 dark:text-gray-300">Overall mastery</span>
+                        <span id="progress-percent" class="text-sm font-medium text-gray-700 dark:text-gray-300">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-primary-600 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-primary-50 dark:bg-gray-700 rounded-md">
+                        <h3 class="font-medium mb-2 text-gray-700 dark:text-gray-300">English</h3>
+                        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
+                            <div class="bg-primary-400 h-2.5 rounded-full progress-lang" data-lang="en" style="width: 0%"></div>
+                        </div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">0% correct</span>
+                    </div>
+                    <div class="p-4 bg-primary-50 dark:bg-gray-700 rounded-md">
+                        <h3 class="font-medium mb-2 text-gray-700 dark:text-gray-300">French</h3>
+                        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
+                            <div class="bg-primary-400 h-2.5 rounded-full progress-lang" data-lang="fr" style="width: 0%"></div>
+                        </div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">0% correct</span>
+                    </div>
+                    <div class="p-4 bg-primary-50 dark:bg-gray-700 rounded-md">
+                        <h3 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Arabic</h3>
+                        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-1">
+                            <div class="bg-primary-400 h-2.5 rounded-full progress-lang" data-lang="ar" style="width: 0%"></div>
+                        </div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">0% correct</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-600 dark:text-gray-400">
+            <p id="footer-text">© 2025 Month Master - Learn months in three languages</p>
+            <p class="mt-2 text-sm">Created by <a href="https://github.com/korbirayen" class="text-primary-600 dark:text-primary-400 hover:underline">Rayen korbi</a> with a little help from <a href="https://huggingface.co/spaces/enzostvs/deepsite" class="text-primary-600 dark:text-primary-400 hover:underline">Deepsite</a></p>
+            <p class="text-xs mt-2">Icons by <a href="https://fontawesome.com/icons" class="text-primary-600 dark:text-primary-400 hover:underline">Font Awesome</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Month data in three languages
+        const monthData = {
+            en: {
+                months: [
+                    "January", "February", "March", "April", 
+                    "May", "June", "July", "August", 
+                    "September", "October", "November", "December"
+                ],
+                translations: {
+                    title: "Month Master",
+                    introTitle: "Welcome to Month Master!",
+                    introText: "Struggling to remember month numbers and names? This interactive quiz will help you master months in three languages: English, French, and Arabic.",
+                    numberToNameBtn: "Number to Name",
+                    nameToNumberBtn: "Name to Number",
+                    mixedBtn: "Mixed Quiz",
+                    hardModeBtn: "Hard Mode",
+                    quizTitle: "Quiz",
+                    nextText: "Next",
+                    submitText: "Submit",
+                    flashcardsTitle: "Month Flashcards",
+                    flashcardsText: "Click on a card to flip it and learn the month in all three languages.",
+                    progressTitle: "Your Progress",
+                    progressLabel: "Overall mastery",
+                    footerText: "© 2025 Month Master - Learn months in three languages",
+                    questionNumberToName: "What is month number {number} called?",
+                    questionNameToNumber: "What number is {month}?",
+                    questionHardNumberToName: "Type the name of month number {number}:",
+                    questionHardNameToNumber: "Type the number for month {month}:",
+                    correct: "Correct!",
+                    incorrect: "Incorrect! The right answer is: {answer}",
+                    completed: "Quiz completed! Your score: {score}/12",
+                    restart: "Restart Quiz"
+                }
+            },
+            fr: {
+                months: [
+                    "Janvier", "Février", "Mars", "Avril", 
+                    "Mai", "Juin", "Juillet", "Août", 
+                    "Septembre", "Octobre", "Novembre", "Décembre"
+                ],
+                translations: {
+                    title: "Maître des Mois",
+                    introTitle: "Bienvenue dans Maître des Mois!",
+                    introText: "Vous avez du mal à vous souvenir des numéros et des noms des mois? Ce quiz interactif vous aidera à maîtriser les mois en trois langues: anglais, français et arabe.",
+                    numberToNameBtn: "Numéro vers Nom",
+                    nameToNumberBtn: "Nom vers Numéro",
+                    mixedBtn: "Quiz Mixte",
+                    hardModeBtn: "Mode Difficile",
+                    quizTitle: "Quiz",
+                    nextText: "Suivant",
+                    submitText: "Soumettre",
+                    flashcardsTitle: "Cartes Mémoire des Mois",
+                    flashcardsText: "Cliquez sur une carte pour la retourner et apprendre le mois dans les trois langues.",
+                    progressTitle: "Votre Progrès",
+                    progressLabel: "Maîtrise globale",
+                    footerText: "© 2025 Maître des Mois - Apprenez les mois en trois langues",
+                    questionNumberToName: "Comment s'appelle le mois numéro {number}?",
+                    questionNameToNumber: "Quel numéro est {month}?",
+                    questionHardNumberToName: "Tapez le nom du mois numéro {number}:",
+                    questionHardNameToNumber: "Tapez le numéro du mois {month}:",
+                    correct: "Correct!",
+                    incorrect: "Incorrect! La bonne réponse est: {answer}",
+                    completed: "Quiz terminé! Votre score: {score}/12",
+                    restart: "Recommencer"
+                }
+            },
+            ar: {
+                months: [
+                    "يناير", "فبراير", "مارس", "أبريل", 
+                    "مايو", "يونيو", "يوليو", "أغسطس", 
+                    "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+                ],
+                translations: {
+                    title: "خبير الشهر",
+                    introTitle: "مرحبًا بكم في سيد الشهر!",
+                    introText: "هل تجد صعوبة في تذكر أرقام وأسماء الشهور؟ سيساعدك هذا الاختبار العملي على إتقان الشهور بثلاث لغات: الإنجليزية والفرنسية والعربية.",
+                    numberToNameBtn: "رقم إلى اسم",
+                    nameToNumberBtn: "اسم إلى رقم",
+                    mixedBtn: "اختبار مختلط",
+                    hardModeBtn: "الوضع الصعب",
+                    quizTitle: "الاختبار",
+                    nextText: "التالي",
+                    submitText: "إرسال",
+                    flashcardsTitle: "البطاقات التعليمية للأشهر",
+                    flashcardsText: "قم بالضغط على بطاقة لقلبها وتعلم الشهر باللغات الثلاث.",
+                    progressTitle: "تقدمك",
+                    progressLabel: "الإتقان العام",
+                    footerText: "© 2025 سيد الشهور - تعلم الشهور بثلاث لغات",
+                    questionNumberToName: "ما هو اسم الشهر رقم {number}؟",
+                    questionNameToNumber: "ما هو رقم شهر {month}؟",
+                    questionHardNumberToName: "اكتب اسم الشهر رقم {number}:",
+                    questionHardNameToNumber: "اكتب رقم شهر {month}:",
+                    correct: "صحيح!",
+                    incorrect: "غير صحيح! الإجابة الصحيحة هي: {answer}",
+                    completed: "اكتمل الاختبار! نتيجتك: {score}/12",
+                    restart: "إعادة الاختبار"
+                }
+            }
+        };
+
+        // Current language (default to English)
+        let currentLanguage = 'en';
+        let quizMode = null;
+        let currentQuestion = 0;
+        let score = 0;
+        let quizQuestions = [];
+        let userProgress = {
+            en: { correct: 0, total: 0 },
+            fr: { correct: 0, total: 0 },
+            ar: { correct: 0, total: 0 }
+        };
+
+        // DOM elements
+        const languageSelector = document.getElementById('language-selector');
+        const appTitle = document.getElementById('app-title');
+        const introTitle = document.getElementById('intro-title');
+        const introText = document.getElementById('intro-text');
+        const numberToNameBtn = document.getElementById('number-to-name-btn');
+        const nameToNumberBtn = document.getElementById('name-to-number-btn');
+        const mixedBtn = document.getElementById('mixed-btn');
+        const hardModeBtn = document.getElementById('hard-mode-btn');
+        const quizArea = document.getElementById('quiz-area');
+        const quizTitle = document.getElementById('quiz-title');
+        const questionContainer = document.getElementById('question-container');
+        const optionsContainer = document.getElementById('options-container');
+        const typeAnswerContainer = document.getElementById('type-answer-container');
+        const typeAnswerInput = document.getElementById('type-answer-input');
+        const submitAnswerBtn = document.getElementById('submit-answer');
+        const submitText = document.getElementById('submit-text');
+        const nextText = document.getElementById('next-text');
+        const flashcardsTitle = document.getElementById('flashcards-title');
+        const flashcardsText = document.getElementById('flashcards-text');
+        const progressTitle = document.getElementById('progress-title');
+        const progressLabel = document.getElementById('progress-label');
+        const footerText = document.getElementById('footer-text');
+        const scoreElement = document.getElementById('score');
+        const progressElement = document.getElementById('progress');
+        const resultContainer = document.getElementById('result-container');
+        const nextBtn = document.getElementById('next-btn');
+        const flashcardsSection = document.querySelector('#flashcards-section .grid');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressBar = document.getElementById('progress-bar');
+        const toggleDarkMode = document.getElementById('toggle-dark-mode');
+
+        // Initialize the app
+        function initApp() {
+            updateUI();
+            generateFlashCards();
+            updateProgressUI();
+            
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // Update UI based on current language
+        function updateUI() {
+            const translations = monthData[currentLanguage].translations;
+            
+            appTitle.textContent = translations.title;
+            introTitle.textContent = translations.introTitle;
+            introText.textContent = translations.introText;
+            numberToNameBtn.textContent = translations.numberToNameBtn;
+            nameToNumberBtn.textContent = translations.nameToNumberBtn;
+            mixedBtn.textContent = translations.mixedBtn;
+            hardModeBtn.textContent = translations.hardModeBtn;
+            quizTitle.textContent = translations.quizTitle;
+            nextText.textContent = translations.nextText;
+            submitText.textContent = translations.submitText;
+            flashcardsTitle.textContent = translations.flashcardsTitle;
+            flashcardsText.textContent = translations.flashcardsText;
+            progressTitle.textContent = translations.progressTitle;
+            progressLabel.textContent = translations.progressLabel;
+            footerText.textContent = translations.footerText;
+            
+            // Set RTL for Arabic
+            if (currentLanguage === 'ar') {
+                document.body.classList.add('rtl');
+                typeAnswerInput.style.textAlign = 'right';
+            } else {
+                document.body.classList.remove('rtl');
+                typeAnswerInput.style.textAlign = 'left';
+            }
+        }
+
+        // Generate flash cards
+        function generateFlashCards() {
+            flashcardsSection.innerHTML = '';
+            
+            for (let i = 0; i < 12; i++) {
+                const monthNumber = i + 1;
+                const monthEn = monthData.en.months[i];
+                const monthFr = monthData.fr.months[i];
+                const monthAr = monthData.ar.months[i];
+                
+                const card = document.createElement('div');
+                card.className = 'flip-card';
+                card.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front flex flex-col items-center justify-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md p-4">
+                            <span class="text-4xl font-bold text-primary-600 dark:text-primary-400">${monthNumber}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 mt-2">${currentLanguage === 'ar' ? 'اضغط للقلب' : currentLanguage === 'fr' ? 'Cliquez pour retourner' : 'Click to flip'}</span>
+                        </div>
+                        <div class="flip-card-back flex flex-col items-center justify-center bg-primary-50 dark:bg-gray-700 border border-primary-200 dark:border-gray-600 rounded-lg shadow-md p-4">
+                            <span class="text-lg font-semibold text-primary-700 dark:text-primary-300">${monthEn}</span>
+                            <span class="text-md text-primary-600 dark:text-primary-200">${monthFr}</span>
+                            <span class="text-md text-primary-800 dark:text-primary-100 mt-2 ${currentLanguage === 'ar' ? 'text-xl' : ''}">${monthAr}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">${monthNumber}</span>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', function() {
+                    this.classList.toggle('flipped');
+                });
+                
+                flashcardsSection.appendChild(card);
+            }
+        }
+
+        // Start quiz
+        function startQuiz(mode) {
+            quizMode = mode;
+            currentQuestion = 0;
+            score = 0;
+            quizQuestions = generateQuizQuestions(mode);
+            
+            // Show quiz area
+            quizArea.classList.remove('hidden');
+            
+            // Show appropriate container based on mode
+            if (mode === 'hard') {
+                optionsContainer.classList.add('hidden');
+                typeAnswerContainer.classList.remove('hidden');
+                typeAnswerInput.value = '';
+                typeAnswerInput.focus();
+            } else {
+                optionsContainer.classList.remove('hidden');
+                typeAnswerContainer.classList.add('hidden');
+            }
+            
+            // Update UI
+            scoreElement.textContent = `${currentLanguage === 'ar' ? 'النتيجة: ' : currentLanguage === 'fr' ? 'Score: ' : 'Score: '}${score}`;
+            progressElement.textContent = `${currentLanguage === 'ar' ? 'السؤال: ' : currentLanguage === 'fr' ? 'Question: ' : 'Question: '}1/${quizQuestions.length}`;
+            
+            displayQuestion();
+        }
+
+        // Generate quiz questions based on mode
+        function generateQuizQuestions(mode) {
+            const questions = [];
+            const months = monthData[currentLanguage].months;
+            
+            if (mode === 'number-to-name') {
+                // Number to name questions
+                for (let i = 0; i < 12; i++) {
+                    questions.push({
+                        type: 'number-to-name',
+                        question: i + 1,
+                        correctAnswer: months[i],
+                        options: generateOptions(months, months[i])
+                    });
+                }
+            } else if (mode === 'name-to-number') {
+                // Name to number questions
+                for (let i = 0; i < 12; i++) {
+                    questions.push({
+                        type: 'name-to-number',
+                        question: months[i],
+                        correctAnswer: (i + 1).toString(),
+                        options: generateOptions(Array.from({length: 12}, (_, i) => (i + 1).toString()), (i + 1).toString())
+                    });
+                }
+            } else if (mode === 'mixed') {
+                // Mixed questions
+                const numberQuestions = [];
+                const nameQuestions = [];
+                
+                for (let i = 0; i < 12; i++) {
+                    numberQuestions.push({
+                        type: 'number-to-name',
+                        question: i + 1,
+                        correctAnswer: months[i],
+                        options: generateOptions(months, months[i])
+                    });
+                    
+                    nameQuestions.push({
+                        type: 'name-to-number',
+                        question: months[i],
+                        correctAnswer: (i + 1).toString(),
+                        options: generateOptions(Array.from({length: 12}, (_, i) => (i + 1).toString()), (i + 1).toString())
+                    });
+                }
+                
+                // Shuffle and take 6 of each
+                shuffleArray(numberQuestions);
+                shuffleArray(nameQuestions);
+                
+                questions.push(...numberQuestions.slice(0, 6), ...nameQuestions.slice(0, 6));
+                shuffleArray(questions);
+            } else if (mode === 'hard') {
+                // Hard mode questions (alternate between types)
+                for (let i = 0; i < 12; i++) {
+                    if (i % 2 === 0) {
+                        // Number to name
+                        questions.push({
+                            type: 'number-to-name-hard',
+                            question: i + 1,
+                            correctAnswer: months[i]
+                        });
+                    } else {
+                        // Name to number
+                        questions.push({
+                            type: 'name-to-number-hard',
+                            question: months[i],
+                            correctAnswer: (i + 1).toString()
+                        });
+                    }
+                }
+                
+                // Shuffle questions
+                shuffleArray(questions);
+            }
+            
+            return questions;
+        }
+
+        // Generate options for a question (correct answer + 3 random wrong answers)
+        function generateOptions(allOptions, correctAnswer) {
+            const options = [correctAnswer];
+            const otherOptions = allOptions.filter(opt => opt !== correctAnswer);
+            
+            // Shuffle and take 3
+            shuffleArray(otherOptions);
+            options.push(...otherOptions.slice(0, 3));
+            
+            // Shuffle the final options
+            shuffleArray(options);
+            
+            return options;
+        }
+
+        // Display current question
+        function displayQuestion() {
+            const question = quizQuestions[currentQuestion];
+            const translations = monthData[currentLanguage].translations;
+            
+            // Clear previous result
+            resultContainer.classList.add('hidden');
+            
+            // Set question text
+            if (question.type === 'number-to-name') {
+                questionContainer.innerHTML = `
+                    <div class="text-2xl font-medium text-gray-800 dark:text-gray-200">
+                        ${translations.questionNumberToName.replace('{number}', question.question)}
+                    </div>
+                `;
+            } else if (question.type === 'name-to-number') {
+                questionContainer.innerHTML = `
+                    <div class="text-2xl font-medium text-gray-800 dark:text-gray-200">
+                        ${translations.questionNameToNumber.replace('{month}', question.question)}
+                    </div>
+                `;
+            } else if (question.type === 'number-to-name-hard') {
+                questionContainer.innerHTML = `
+                    <div class="text-2xl font-medium text-gray-800 dark:text-gray-200">
+                        ${translations.questionHardNumberToName.replace('{number}', question.question)}
+                    </div>
+                `;
+            } else if (question.type === 'name-to-number-hard') {
+                questionContainer.innerHTML = `
+                    <div class="text-2xl font-medium text-gray-800 dark:text-gray-200">
+                        ${translations.questionHardNameToNumber.replace('{month}', question.question)}
+                    </div>
+                `;
+            }
+            
+            // Generate options for non-hard mode
+            if (quizMode !== 'hard') {
+                optionsContainer.innerHTML = '';
+                question.options.forEach((option, index) => {
+                    const optionElement = document.createElement('button');
+                    optionElement.className = 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-md p-4 text-lg font-medium transition text-gray-800 dark:text-gray-200';
+                    optionElement.textContent = option;
+                    optionElement.dataset.answer = option;
+                    optionElement.addEventListener('click', selectAnswer);
+                    optionsContainer.appendChild(optionElement);
+                });
+            } else {
+                // For hard mode, clear the input
+                typeAnswerInput.value = '';
+                typeAnswerInput.focus();
+            }
+            
+            // Update progress display
+            progressElement.textContent = `${currentLanguage === 'ar' ? 'السؤال: ' : currentLanguage === 'fr' ? 'Question: ' : 'Question: '}${currentQuestion + 1}/${quizQuestions.length}`;
+        }
+
+        // Handle answer selection
+        function selectAnswer(e) {
+            const selectedAnswer = e.target.dataset.answer;
+            const question = quizQuestions[currentQuestion];
+            
+            // Disable all options
+            const options = optionsContainer.querySelectorAll('button');
+            options.forEach(opt => {
+                opt.removeEventListener('click', selectAnswer);
+                opt.classList.remove('hover:bg-gray-50', 'dark:hover:bg-gray-600');
+                
+                if (opt.dataset.answer === question.correctAnswer) {
+                    opt.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-400', 'dark:border-green-700');
+                } else if (opt.dataset.answer === selectedAnswer && selectedAnswer !== question.correctAnswer) {
+                    opt.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-400', 'dark:border-red-700');
+                }
+            });
+            
+            // Check if answer is correct
+            const isCorrect = selectedAnswer === question.correctAnswer;
+            showResult(isCorrect, question.correctAnswer);
+        }
+
+        // Handle hard mode answer submission
+        function submitHardModeAnswer() {
+            const userAnswer = typeAnswerInput.value.trim();
+            const question = quizQuestions[currentQuestion];
+            
+            // Normalize answers for comparison
+            const normalizedUserAnswer = userAnswer.toLowerCase();
+            const normalizedCorrectAnswer = question.correctAnswer.toLowerCase();
+            
+            // Check if answer is correct (allowing for some flexibility)
+            const isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+            
+            // Show result
+            showResult(isCorrect, question.correctAnswer);
+        }
+
+        // Show result feedback
+        function showResult(isCorrect, correctAnswer) {
+            const translations = monthData[currentLanguage].translations;
+            
+            // Update score if correct
+            if (isCorrect) {
+                score++;
+                scoreElement.textContent = `${currentLanguage === 'ar' ? 'النتيجة: ' : currentLanguage === 'fr' ? 'Score: ' : 'Score: '}${score}`;
+                
+                // Update progress for the language
+                userProgress[currentLanguage].correct++;
+            }
+            userProgress[currentLanguage].total++;
+            
+            // Update progress UI
+            updateProgressUI();
+            
+            // Show result feedback
+            resultContainer.innerHTML = `
+                <div class="p-4 ${isCorrect ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700'} rounded-md">
+                    ${isCorrect ? translations.correct : translations.incorrect.replace('{answer}', correctAnswer)}
+                </div>
+            `;
+            resultContainer.classList.remove('hidden');
+        }
+
+        // Update progress UI
+        function updateProgressUI() {
+            // Calculate percentages for each language
+            ['en', 'fr', 'ar'].forEach(lang => {
+                const langCorrect = userProgress[lang].correct;
+                const langTotal = userProgress[lang].total;
+                const langPercentage = langTotal > 0 ? Math.round((langCorrect / langTotal) * 100) : 0;
+                
+                // Update progress bar and text
+                const progressBar = document.querySelector(`.progress-lang[data-lang="${lang}"]`);
+                if (progressBar) {
+                    progressBar.style.width = `${langPercentage}%`;
+                    const textElement = progressBar.parentElement.nextElementSibling;
+                    textElement.textContent = `${langPercentage}% ${currentLanguage === 'ar' ? 'صحيح' : currentLanguage === 'fr' ? 'correct' : 'correct'}`;
+                }
+            });
+            
+            // Calculate overall percentage
+            const totalCorrect = userProgress.en.correct + userProgress.fr.correct + userProgress.ar.correct;
+            const totalQuestions = userProgress.en.total + userProgress.fr.total + userProgress.ar.total;
+            const overallPercentage = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+            
+            progressPercent.textContent = `${overallPercentage}%`;
+            progressBar.style.width = `${overallPercentage}%`;
+        }
+
+        // Go to next question or finish quiz
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < quizQuestions.length) {
+                displayQuestion();
+                
+                // For hard mode, focus the input
+                if (quizMode === 'hard') {
+                    typeAnswerInput.value = '';
+                    typeAnswerInput.focus();
+                }
+            } else {
+                // Quiz completed
+                const translations = monthData[currentLanguage].translations;
+                
+                questionContainer.innerHTML = `
+                    <div class="text-2xl font-medium text-center text-primary-600 dark:text-primary-400 py-8">
+                        ${translations.completed.replace('{score}', score)}
+                    </div>
+                `;
+                
+                optionsContainer.innerHTML = '';
+                typeAnswerContainer.classList.add('hidden');
+                resultContainer.classList.add('hidden');
+                
+                nextBtn.textContent = translations.restart;
+                nextBtn.removeEventListener('click', nextQuestion);
+                nextBtn.addEventListener('click', function() {
+                    startQuiz(quizMode);
+                });
+            }
+        }
+
+        // Utility function to shuffle array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Event listeners
+        languageSelector.addEventListener('change', function() {
+            currentLanguage = this.value;
+            updateUI();
+            generateFlashCards();
+            
+            // If quiz is active, update the UI
+            if (!quizArea.classList.contains('hidden')) {
+                scoreElement.textContent = `${currentLanguage === 'ar' ? 'النتيجة: ' : currentLanguage === 'fr' ? 'Score: ' : 'Score: '}${score}`;
+                progressElement.textContent = `${currentLanguage === 'ar' ? 'السؤال: ' : currentLanguage === 'fr' ? 'Question: ' : 'Question: '}${currentQuestion + 1}/${quizQuestions.length}`;
+                
+                const translations = monthData[currentLanguage].translations;
+                if (currentQuestion < quizQuestions.length) {
+                    nextBtn.textContent = translations.nextText;
+                } else {
+                    nextBtn.textContent = translations.restart;
+                }
+            }
+        });
+
+        document.getElementById('start-number-to-name').addEventListener('click', function() {
+            startQuiz('number-to-name');
+        });
+
+        document.getElementById('start-name-to-number').addEventListener('click', function() {
+            startQuiz('name-to-number');
+        });
+
+        document.getElementById('start-mixed').addEventListener('click', function() {
+            startQuiz('mixed');
+        });
+
+        document.getElementById('start-hard-mode').addEventListener('click', function() {
+            startQuiz('hard');
+        });
+
+        submitAnswerBtn.addEventListener('click', submitHardModeAnswer);
+
+        typeAnswerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitHardModeAnswer();
+            }
+        });
+
+        nextBtn.addEventListener('click', nextQuestion);
+
+        // Toggle dark mode
+        toggleDarkMode.addEventListener('click', function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // Initialize the app
+        initApp();
+    </script>
+</body>
+</html>
